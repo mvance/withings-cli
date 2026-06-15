@@ -54,6 +54,12 @@ func newMeasuresCommand() *cobra.Command {
 		emptyString,
 		"category: real or goal",
 	)
+	measuresGetCmd.Flags().StringVar(
+		&opts.Units,
+		"units",
+		"metric",
+		"unit system: metric or imperial",
+	)
 
 	return measuresCmd
 }

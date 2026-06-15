@@ -300,8 +300,77 @@ func TestFormatScaledValue(t *testing.T) {
 func TestBuildRows(t *testing.T) {
 	t.Parallel()
 
-	rows := buildRows(testBody())
+	rows := buildRows(Options{}, testBody())
 	assertSingleMeasureRow(t, rows)
+}
+
+// TestBuildRowsImperial converts weight to lbs.
+func TestBuildRowsImperial(t *testing.T) {
+	t.Parallel()
+
+	body := testBody()
+	body.MeasureGroups[0].Measures[0].Type = 1 // Weight
+	body.MeasureGroups[0].Measures[0].Value = 7500
+	body.MeasureGroups[0].Measures[0].Unit = -2
+
+	opts := Options{Units: "imperial"}
+	rows := buildRows(opts, body)
+
+	if len(rows) != 1 {
+		t.Fatalf("rows got %d want 1", len(rows))
+	}
+
+	row := rows[0]
+	if row.Value != "165.35" {
+		t.Fatalf("value got %q want %q", row.Value, "165.35")
+	}
+
+	if row.Unit != "lb" {
+		t.Fatalf("unit got %q want %q", row.Unit, "lb")
+	}
+}
+
+// TestBuildRowsImperial_NonWeight does not convert non-weight units.
+func TestBuildRowsImperial_NonWeight(t *testing.T) {
+	t.Parallel()
+
+	body := testBody()
+	body.MeasureGroups[0].Measures[0].Type = 10 // BP Systolic (mmHg)
+	body.MeasureGroups[0].Measures[0].Value = 120
+	body.MeasureGroups[0].Measures[0].Unit = 0
+
+	opts := Options{Units: "imperial"}
+	rows := buildRows(opts, body)
+
+	if len(rows) != 1 {
+		t.Fatalf("rows got %d want 1", len(rows))
+	}
+
+	row := rows[0]
+	if row.Value != "120" {
+		t.Fatalf("value got %q want %q", row.Value, "120")
+	}
+
+	if row.Unit != "mmHg" {
+		t.Fatalf("unit got %q want %q", row.Unit, "mmHg")
+	}
+}
+
+// TestBuildParams_InvalidUnits rejects invalid unit systems.
+func TestBuildParams_InvalidUnits(t *testing.T) {
+	t.Parallel()
+
+	opts := Options{Units: "invalid"}
+	_, err := buildParams(opts)
+
+	if err == nil {
+		t.Fatal("buildParams should have failed with invalid units")
+	}
+
+	expected := "invalid units \"invalid\": must be metric or imperial"
+	if err.Error() != expected {
+		t.Fatalf("error got %q want %q", err.Error(), expected)
+	}
 }
 
 func testBody() body {

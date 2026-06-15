@@ -78,6 +78,7 @@ withings [global flags] <subcommand> [args]
       `muscle_mass`,
       `hydration`, `bone_mass`, `pulse_wave_velocity` (or numeric IDs)
   - `--category <real|goal|1|2>`
+  - `--units <metric|imperial>` unit system for table output (default `metric`); does not affect `--json`
   - `--last-update` cannot be combined with `--start` or `--end`
   - behavior: idempotent, read-only
   - table output columns: `time`, `type`, `value`, `unit`, `category`
